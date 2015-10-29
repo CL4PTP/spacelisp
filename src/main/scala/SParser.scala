@@ -10,7 +10,7 @@ object SParser extends JavaTokenParsers {
 		x => SBoolean(x.toBoolean)
 	}
 	val string: Parser[SString] = stringLiteral ^^ {
-		x => SString(x)
+		x => SString(x.init.tail)
 	}
 	val symbol: Parser[SSymbol] = """[A-Za-z0-9!#$%&|*+\-/:<=>?@\^_~]+""".r ^^ {
 		x => SSymbol(x)
