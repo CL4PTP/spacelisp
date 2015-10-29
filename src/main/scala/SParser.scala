@@ -19,7 +19,7 @@ object SParser extends JavaTokenParsers {
 		x => SList(x)
 	}
 	val quoted: Parser[SList] = "'" ~> expr ^^ {
-		x => SList(SSymbol("quote") :: List(x))
+		x => SList(List(SSymbol("quote"), x))
 	}
 	val expr: Parser[SVal] = number | string | bool | symbol | list | quoted
 
@@ -27,6 +27,6 @@ object SParser extends JavaTokenParsers {
 
 	def apply(input: String) = parseAll(list, input) match {
 		case Success(result, _) => result
-		case failure : NoSuccess => scala.sys.error(failure.msg)
+		case unknownFailure: NoSuccess => throw SParseError(unknownFailure)
 	}
 }
