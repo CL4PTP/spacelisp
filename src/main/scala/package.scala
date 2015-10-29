@@ -16,8 +16,14 @@ package object slisp {
 	}
 
 	object SLisp {
-		def apply(input: String) = {
-			SEvaluator(SParser(input))
+		def apply(input: String): Either[SVal, SError] = {
+			try {
+				Left(SEvaluator(SParser(input)))
+			}
+			catch {
+				case s: SError => Right(s)
+				case t: Throwable => throw t
+			}
 		}
 	}
 }
