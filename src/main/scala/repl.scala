@@ -25,13 +25,17 @@ object Main {
 					case lisp => {
 						out println (SLisp(lisp) match {
 							case Left(sval) => sval.pprint
-							case Right(error) => error match {
-								case SParseError(error) => "Parse error: " + error
-								case SNumArgsError(exp, found) => "Expected " + exp + " arguments, found " + found.length + " " + SList(found).pprint + ""
-								case STypeMismatchError(exp, found) => "Expected type " + exp + ", found " + found
-								case SNotAFunctionError(msg, fnc) => fnc + " is not a function (" + msg + ")"
-								case SUnboundVarError(msg, vname) => vname + " is not a variable (" + msg + ")"
-								case SDefaultError(msg) => "Error: " + msg
+							case Right(error) => {
+								error.printStackTrace
+								
+								error match {
+									case SParseError(error) => "Parse error: " + error
+									case SNumArgsError(exp, found) => "Expected " + exp + " arguments, found " + found.length + " " + SList(found).pprint + ""
+									case STypeMismatchError(exp, found) => "Expected type " + exp + ", found " + found
+									case SNotAFunctionError(msg, fnc) => fnc + " is not a function (" + msg + ")"
+									case SUnboundVarError(msg, vname) => vname + " is not a variable (" + msg + ")"
+									case SDefaultError(msg) => "Error: " + msg
+								}
 							}
 						})
 						out.flush()
