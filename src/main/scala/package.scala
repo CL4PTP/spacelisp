@@ -16,6 +16,9 @@ package object slisp {
 
 		implicit def sboolean2boolean(x: Boolean): SBoolean = SBoolean(x)
 		implicit def boolean2sboolean(x: SBoolean): Boolean = x.bool
+
+		implicit def sprimfnc2scalafnc(x: List[SVal] => SVal): SPrimitiveFnc = SPrimitiveFnc(x)
+		implicit def scalafnc2sprimfnc(x: SPrimitiveFnc): List[SVal] => SVal = x.fnc
 	}
 
 	object SLisp {
