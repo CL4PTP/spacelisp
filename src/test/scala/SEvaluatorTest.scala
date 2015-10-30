@@ -5,24 +5,28 @@ import org.scalatest.FunSuite
 class EvaluatorTest extends FunSuite {
 	import SLispImplicits._
 
-	def testNum(expr: String)(expected: Double) = {
-		assertResult(SNumber(expected))(SLisp(expr))
+	def testNum(expected: Double)(expr: String) = {
+		assertResult(Left(SNumber(expected)))(SLisp(expr))
 	}
 
-	def testString(expr: String)(expected: String) = {
-		assertResult(SString(expected))(SLisp(expr))
+	def testString(expected: String)(expr: String) = {
+		assertResult(Left(SString(expected)))(SLisp(expr))
 	}
 
 	def testTrue(expr: String) = {
-		assertResult(SBoolean(true))(SLisp(expr))
+		assertResult(Left(SBoolean(true)))(SLisp(expr))
+	}
+
+	def testArbitrary(expected: SVal)(value: Either[SVal, SError]) = {
+		assertResult(Left(expected))(value)
 	}
 	
 	// ---
 
 	test("Simple addition") {
-		testNum("(+ 1)") (1)
-		testNum("(+ 1 2 3)") (1 + 2 + 3)
-		testNum("(+ 1 -2 3)") (1 + -2 + 3)
+		testNum(1) ("(+ 1)")
+		testNum(1 + 2 + 3) ("(+ 1 2 3)")
+		testNum(1 + -2 + 3) ("(+ 1 -2 3)")
 	}
 
 	test("Weak equality") {
@@ -48,25 +52,42 @@ class EvaluatorTest extends FunSuite {
 	}
 
 	test("Simple conditionals") {
-		testString("""(if (< 1 2) "hi" "IMPOSSIBLE!")""") ("hi")
-		testString("""(if (> 1 2) "hi" "IMPOSSIBLE!")""") ("IMPOSSIBLE!")
+		testString("hi") ("""(if (< 1 2) "hi" "IMPOSSIBLE!")""")
+		testString("IMPOSSIBLE!") ("""(if (> 1 2) "hi" "IMPOSSIBLE!")""")
 	}
 
 	test("Simple list primitives") {
-		assertResult(SNumber(1)) (SLisp("(car '(1 2 3))"))
-		assertResult(SList(List(2, 3))) (SLisp("(cdr '(1 2 3))"))
+		testArbitrary(SNumber(1)) (SLisp("(car '(1 2 3))"))
+		testArbitrary(SList(List(2, 3))) (SLisp("(cdr '(1 2 3))"))
 	}
 
 	test("List `cons`s") {
-		assertResult(SList(List(1, 2, 3))) (SLisp("(cons 1 '(2 3))"))
-		assertResult(SList(List(1))) (SLisp("(cons 1 '())"))
+		testArbitrary(SList(List(1, 2, 3))) (SLisp("(cons 1 '(2 3))"))
+		testArbitrary(SList(List(1))) (SLisp("(cons 1 '())"))
 
-		assertResult(SList(List(1, 2))) (SLisp("(cons 1 2)"))
+		testArbitrary(SList(List(1, 2))) (SLisp("(cons 1 2)"))
 	}
 
 	test("Binds") {
-		assertResult(SNumber(1)) (SLisp("(bind ((hi 1) (ho (+ hi 1))) (+ hi ho) (- ho hi))"))
+		testArbitrary(SNumber(1)) (SLisp("(bind ((hi 1) (ho (+ hi 1))) (+ hi ho) (- ho hi))"))
+	}
 
-		// assertResult(SNumber(1)) (SLisp("((bind ((hi 1) (ho (+ hi 1))) (+ hi ho) (- ho hi))"))
+	test("Recursion") {
+		testArbitrary(SNumber(6)) (SLisp("""
+			(bind
+				(
+					(fac (lambda (s)
+
+						(if (<= s 1)
+							1
+							(* s (fac (- s 1)))
+						)
+					))
+				)
+
+			(fac 3)
+			
+			)
+		"""))
 	}
 }
