@@ -19,6 +19,7 @@ sealed trait SVal {
 		case (SString(a), SString(b)) => SString(a + b)
 		case (SNumber(a), SNumber(b)) => SNumber(a + b)
 		case _ => throw new IllegalArgumentException("Can't add " + o + " and " + this)
+		// BUG: change the above to case _ => throw STypeMismatchError("String|Number", o)
 	}
 
 	def -(o: SVal): SVal = (this, o) match {
@@ -120,7 +121,7 @@ case class SSymbol (name: String) extends SVal {
 		case _ => false
 	}
 
-	override def pprint: String = s"'$name"
+	override def pprint: String = name
 }
 case class SBoolean (bool: Boolean) extends SVal {
 	override def weak_==(o: SVal): Boolean = o match {
@@ -149,6 +150,9 @@ case class SString (string: String) extends SVal {
 }
 case class SList (list: List[SVal]) extends SVal {
 	override def pprint: String = list map(_.pprint) mkString("(", ", ", ")")
+}
+case class SPrimitiveFnc (fnc: List[SVal] => SVal) extends SVal {
+	override def pprint: String = "<primitive>"
 }
 case class SFnc (params: List[String], body: List[SVal], closure: SEnv) extends SVal {
 	override def pprint: String = "(lambda (" + (params mkString " ") + ") ...)"
