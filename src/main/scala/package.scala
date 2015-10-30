@@ -1,4 +1,7 @@
 package object slisp {
+	type MutMap[A, B] = scala.collection.mutable.Map[A, B]
+	def MutMap[A, B](pairs: (A, B)*) = scala.collection.mutable.Map(pairs: _*)
+
 	object SLispImplicits {
 		import scala.language.implicitConversions
 
