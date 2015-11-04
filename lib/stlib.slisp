@@ -1,0 +1,25 @@
+(scope-bind
+	(map (lambda (fnc list)
+		(if (== list '())
+			'()
+			(cons
+				(fnc (car list))
+				(map fnc (cdr list))
+			)
+		)
+	))
+	(filter (lambda (pred list)
+		(if (== list '())
+			'()
+			(if (pred (car list))
+				(cons (car list) (filter pred (cdr list)))
+				(filter pred (cdr list))
+			)
+		)
+	))
+)
+
+(display 
+	(map (lambda (a) (+ a 1)) '(1 2 3 4 5))
+	(filter (lambda (a) (== 0 (% a 2))) '(1 2 3 4 5))
+)
