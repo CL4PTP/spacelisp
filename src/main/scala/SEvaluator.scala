@@ -48,6 +48,15 @@ object SEvaluator {
 			}
 		}
 
+		case SList(SSymbol("scope-bind") :: val_exprs) => {
+			doVarBind(e)(val_exprs map (_ match {
+				case SList(SSymbol(name) :: bind :: Nil) => (name -> bind)
+				case _ => throw SDefaultError("Bad bind form")
+			}))
+
+			SBoolean(false)
+		}
+
 		case SList(SSymbol("lambda") :: SList(params) :: expressions) =>
 			SFnc(params map {
 				case SSymbol(name) => name
