@@ -4,6 +4,8 @@ object SEvaluator {
 	import scala.language.postfixOps
 	import SLispImplicits._
 
+	case class SEvaluatorResult(env: SEnv, result: SVal)
+
 	def valValVal(op: (SVal, SVal) => SVal): List[SVal] => SVal =
 		_ reduce op
 
@@ -61,7 +63,7 @@ object SEvaluator {
 			SFnc(params map {
 				case SSymbol(name) => name
 				case badArg => throw SDefaultError("Expected symbol, found " + badArg.pprint)
-			}, expressions, e)
+			}, expressions, e newScope)
 
 		case SList(symbol :: stail) => _apply(e)(symbol) match {
 			case SFnc(params, body, closure) => {
@@ -78,8 +80,7 @@ object SEvaluator {
 		case _ => throw SDefaultError("Unable to process " + n)
 	}
 
-	def apply(node: SVal): SVal = {
-		_apply(SEnv(List(MutMap(
+	def makeTopEnvironment: SEnv = SEnv(List(MutMap(
 			"+" -> valValVal(_ + _),
 			"-" -> SPrimitiveFnc(x =>
 				if (x.length == 1) -1 * x(0)
@@ -123,6 +124,9 @@ object SEvaluator {
 				case List(x, y) => SList(List(x, y)) // TODO: decide if this is OK
 				case badArgs => throw SDefaultError("Unable to `cons` value " + badArgs)
 			})
-		))))(node)
+		)))
+
+	def apply(node: SVal, env: SEnv = makeTopEnvironment): SEvaluatorResult = {
+		SEvaluatorResult(env, _apply(env)(node))
 	}
 }

@@ -20,16 +20,4 @@ package object slisp {
 		implicit def sprimfnc2scalafnc(x: List[SVal] => SVal): SPrimitiveFnc = SPrimitiveFnc(x)
 		implicit def scalafnc2sprimfnc(x: SPrimitiveFnc): List[SVal] => SVal = x.fnc
 	}
-
-	object SLisp {
-		def apply(input: String): Either[SVal, SError] = {
-			try {
-				Left(SEvaluator(SParser(input)))
-			}
-			catch {
-				case s: SError => Right(s)
-				case t: Throwable => throw t
-			}
-		}
-	}
 }

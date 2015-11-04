@@ -22,10 +22,16 @@ object SParser extends JavaTokenParsers {
 		x => SList(List(SSymbol("quote"), x))
 	}
 	val expr: Parser[SVal] = number | string | bool | symbol | list | quoted
+	val file: Parser[List[SVal]] = list.*
 
 	// ---
 
 	def apply(input: String) = parseAll(list, input) match {
+		case Success(result, _) => result
+		case unknownFailure: NoSuccess => throw SParseError(unknownFailure)
+	}
+
+	def parseFile(input: String) = parseAll(file, input) match {
 		case Success(result, _) => result
 		case unknownFailure: NoSuccess => throw SParseError(unknownFailure)
 	}
